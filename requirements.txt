@@ -1,0 +1,26 @@
+nibabel
+h5py
+matplotlib
+pycocotools
+IPython
+himalaya
+timm
+fairscale
+omegaconf
+einops
+pandas
+numpy
+matplotlib
+
+# Required for Stable Diffusion 1.4 compatibility
+torch==2.2.1+cu121       # or use version that matches your GPU setup
+torchvision==0.17.1+cu121
+torchaudio==2.2.1+cu121
+# Install CUDA wheels from PyTorch index
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+# Pytorch Lightning compatible with stable-diffusion (1.4)
+pytorch-lightning==1.8.6
+
+transformers==4.41.1
+kornia
