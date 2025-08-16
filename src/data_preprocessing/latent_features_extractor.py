@@ -160,7 +160,7 @@ class StableDiffusionExtractor(FeatureExtractor):
                         Image.fromarray(x_sample.astype(np.uint8)).save(os.path.join(self.output_dir, f'reconstructed_images_from_originals/{self.subject}/{img_str}.png'))
 
             np.save(os.path.join(self.output_dir, f'latent_features/extracted_latents/init_latent/{self.subject}/{img_str}.npy'), init_latent.cpu().numpy())
-            np.save(os.path.join(self.output_dir, f'latent_features/extracted_latents/c_top{self.captions_num}_captions/{img_str}.npy'), c.cpu().numpy())
+            np.save(os.path.join(self.output_dir, f'latent_features/extracted_latents/c_top{self.captions_num}_captions/{self.subject}/{img_str}.npy'), c.cpu().numpy())
 
 def main():
     parser = argparse.ArgumentParser(description="Extract features using Stable Diffusion.")
