@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67c40e86-5f6c-4115-a298-e2f919bfa480" name="Changes" comment="commit src files" />
+    <list default="true" id="67c40e86-5f6c-4115-a298-e2f919bfa480" name="Changes" comment="commit src files">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modal_app_pipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/modal_app_pipeline.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/data_preprocessing/latent_features_extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/data_preprocessing/latent_features_extractor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/data_preprocessing/latent_features_splitter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/data_preprocessing/latent_features_splitter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/decoding/diffusion_decoding.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/decoding/diffusion_decoding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/model_training/regression_model_trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/regression.py" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -23,22 +31,26 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 4
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
   <component name="ProjectId" id="31H7ZIWYwHE21LSr2zUh7cjEkzO" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/abdallah.mohamed/PycharmProjects/neurodiffusion&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\abdallah.mohamed\PycharmProjects\neurodiffusion" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\abdallah.mohamed\PycharmProjects\neurodiffusion" />
     </key>

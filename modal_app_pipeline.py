@@ -1,4 +1,4 @@
-# modal_stub_pipeline.py
+# modal_app_pipeline.py
 
 import modal
 
@@ -16,7 +16,7 @@ volume = modal.Volume.from_name("brainfmri2image")
 COMMON_OPTS = {
     "image": image,
     "volumes": {"/mnt/": volume},
-    "gpu": "T4",  # Optional, for GPU-requiring steps like reconstruction
+    # "gpu": "T4",  # Optional, for GPU-requiring steps like reconstruction
     "timeout": 50000  # In seconds (if needed for long jobs)
 }
 
@@ -48,7 +48,8 @@ def encode_features(
         output_dir: str = "/mnt/outputs/",
         subject: str = "subj02",
         nsd_root: str = "/mnt/datasets/nsd/",
-        packages_path: str = "/mnt/packages/"
+        packages_path: str = "/mnt/packages/",
+        recon_img_flag=False
 ):
     import sys
     sys.path.append("/mnt/")  # Now /mnt/src is visible to Python
@@ -62,7 +63,8 @@ def encode_features(
         output_dir=output_dir,
         subject=subject,
         nsd_root=nsd_root,
-        packages_path=packages_path
+        packages_path=packages_path,
+        recon_img_flag=recon_img_flag
     )
     extractor.extract_features()
 
@@ -89,61 +91,143 @@ def split_latent_features(subject: str = "subj02", featname: str = "init_latent"
     print(f"✅ Latent feature split complete for {subject} ({featname}, {use_stim})")
 
 
-# 🔧 STEP 4: Train Model (placeholder)
+# 🔧 STEP 4 : Train Model Enhanced
 @app.function(**COMMON_OPTS)
-def train_model(subject: str, roi: str, target: str, model: str = "all", pca_dim: int = 512):
+def train_model(
+    subject: str,
+    roi,  # list or comma/space-separated str
+    target: str,
+    model: str = "all",          # 'ridge' | 'kernelridge' | 'mlp' | 'all'
+    pca_dim: int = 512,
+    use_pca: bool = False,
+    betas_flag: str = "each",    # 'each' or 'ave'
+    ridge_kernel: str = "rbf",
+    fmri_dir: str = "/mnt/outputs/fmri_features/",
+    feat_dir: str = "/mnt/outputs/latent_features/",
+    models_dir: str = "/mnt/outputs/saved_models/",
+):
     import sys
+    from functools import partial
     sys.path.append("/mnt/")
-    roi = roi.split(",")
 
-    from src.models.regression import RidgeRegression, KernelRidgeRegression, MLPRegression
+    from src.model_training.regression_model_trainer import (
+        RidgeRegression,
+        KernelRidgeRegression,
+        MLPRegression,
+    )
+
+    # normalize ROI to list
+    if isinstance(roi, str):
+        roi_list = [r for r in (roi.split(",") if "," in roi else roi.split()) if r]
+    else:
+        roi_list = list(roi)
+
+    # coerce use_pca if it arrives as string
+    if isinstance(use_pca, str):
+        use_pca = use_pca.strip().lower() in {"1", "true", "yes", "y", "on"}
 
     models = {
-        'ridge': RidgeRegression,
-        'kernelridge': lambda **kwargs: KernelRidgeRegression(**kwargs, pca_dim=pca_dim),
-        'mlp': lambda **kwargs: MLPRegression(**kwargs, pca_dim=pca_dim)
+        "ridge": partial(RidgeRegression, pca_dim=pca_dim),
+        "kernelridge": partial(KernelRidgeRegression, ridge_kernel=ridge_kernel, pca_dim=pca_dim),
+        "mlp": partial(MLPRegression, pca_dim=pca_dim),
     }
 
-    if model == 'all':
-        selected_models = models.values()
-    else:
-        selected_models = [models[model]]
+    if model != "all" and model not in models:
+        raise ValueError(f"Unknown model '{model}'. Choose one of {list(models.keys()) + ['all']}.")
 
-    for model_class in selected_models:
-        reg_model = model_class(
-            target=target,
-            roi=roi,
-            subject=subject,
-            fmri_dir="/mnt/outputs/fmri_features/",
-            feat_dir="/mnt/outputs/latent_features",
-            models_dir="/mnt/outputs/models"
-        )
-        model_path, scores, mean_rs = reg_model.train()
-        print(
-            f"{model_class.__name__ if hasattr(model_class, '__name__') else 'MLPRegression'} saved to: {model_path}, Mean correlation: {mean_rs:.3f}")
+    # keep names for logging/results
+    selected_items = list(models.items()) if model == "all" else [(model, models[model])]
+
+    results = []
+    for name, ctor in selected_items:
+        try:
+            print(f"▶ Training {name} | subj={subject} | roi={roi_list} | target={target} "
+                  f"| use_pca={use_pca} | pca_dim={pca_dim} | betas_flag={betas_flag} | kernel={ridge_kernel}")
+            reg_model = ctor(
+                target=target,
+                roi=roi_list,
+                subject=subject,
+                fmri_dir=fmri_dir,
+                feat_dir=feat_dir,
+                models_dir=models_dir,
+                betas_flag=betas_flag,
+                use_pca=use_pca,
+            )
+            model_path, scores, mean_rs = reg_model.train()
+            print(f"✔ {reg_model.__class__.__name__} saved: {model_path} | mean corr={mean_rs:.3f}")
+            results.append({
+                "model": name,
+                "path": model_path,
+                "mean_corr": float(mean_rs),
+                "roi": roi_list,
+                "target": target,
+                "use_pca": use_pca,
+                "pca_dim": pca_dim,
+                "kernel": ridge_kernel if name == "kernelridge" else None,
+            })
+        except Exception as e:
+            print(f"✖ Failed {name}: {e}")
+            results.append({"model": name, "error": str(e)})
+
+    return results
 
 
-@app.function(image=image, gpu="T4", timeout=60 * 30, volumes={"/mnt": volume})
-def run_decoder(imgidx: str, method: str, subject: str):
+# STEP 5: Run decoder.
+@app.function(**COMMON_OPTS)  # reuse COMMON_OPTS and add GPU here
+def run_decoder(
+        imgidx: int = 0,
+        method: str = "kernelridgeregression",
+        subject: str = "subj05",
+        roi_init_latent: str = "early ventral",  # or space/comma-separated list
+        roi_c: str = "early ventral",
+        captions_type: str = "c_top1_captions",
+        pca_dim: str = "pca512",
+        seed: int = 42,
+        ddim_steps: int = 50,
+        strength: float = 0.8,
+        scale: float = 5.0,
+        n_iter: int = 5,
+        kernel_used: str = "dummy",
+
+):
     import sys
     sys.path.append("/mnt")
-    from src.decoding.diffusion_decoding import DiffusionDecoder
+    from src.decoding.diffusion_decoding_enhanced import DiffusionDecoder
+
+    # Allow "early ventral" or "early,ventral" inputs
+    def _normalize_roi(val):
+        if isinstance(val, (list, tuple)):
+            return list(val)
+        if "," in val:
+            return [v.strip() for v in val.split(",") if v.strip()]
+        return [v for v in val.split() if v]
 
     decoder = DiffusionDecoder(
         imgidx=imgidx,
-        method=method,
+        method=method,  # e.g., "kernelridge", "ridge", "mlp"
         subject=subject,
-        gpu=0,
-        seed=42,
-        nsd_dir="/mnt/datasets/nsd/",
+        gpu=0,  # Modal assigns one GPU; index 0 inside the container
+        nsd_dir="/mnt/datasets/nsd",
         output_dir="/mnt/outputs",
-        config_path="/mnt/packages/stable-diffusion/configs/stable-diffusion/v1-inference.yaml",
-        ckpt_path="/mnt/packages/stable-diffusion/models/ldm/stable-diffusion-v1/sd-v1-4.ckpt"
+        packages_path="/mnt/packages",
+        roi_init_latent=_normalize_roi(roi_init_latent),
+        roi_c=_normalize_roi(roi_c),
+        captions_type=captions_type,
+        kernel_used=kernel_used,
+        pca_dim=pca_dim,
+        seed=seed,
+        ddim_steps=ddim_steps,
+        strength=strength,
+        scale=scale,
+        n_iter=n_iter,
     )
-    decoder.decode()
+    try:
+        decoder.decode()
+    finally:
+        decoder.close()
 
 
-# 🔧 STEP 4: Reconstruct & Evaluate (placeholder)
+# 🔧 STEP 6: Reconstruct & Evaluate (placeholder)
 @app.function(**COMMON_OPTS)
 def reconstruct_and_evaluate(subject: str):
     print(f"🧠 Reconstructing images for {subject}...")

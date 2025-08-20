@@ -97,7 +97,8 @@ def main():
     parser.add_argument("--featname", type=str, required=True, help="Feature type (init_latent or c_topk_captions)")
     parser.add_argument("--use_stim", type=str, required=True, choices=['ave', 'each'],
                         help="Stimulus type (ave or each)")
-    parser.add_argument("--subject", type=str, required=True, help="Subject ID (e.g., subj01)")
+    parser.add_argument("--subject", type=str, required=True, choices=['subj01', 'subj02', 'subj03', 'subj04', 'subj05',
+                        'subj06', 'subj07', 'subj08'], help="Subject ID (e.g., subj01)")
     parser.add_argument("--nsd_dir", type=str, default="/mnt/dataset/nsd", help="NSD data directory")
     parser.add_argument("--output_dir", type=str, default="/mnt/outputs", help="Output directory")
 
