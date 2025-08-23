@@ -5,11 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67c40e86-5f6c-4115-a298-e2f919bfa480" name="Changes" comment="commit src files">
-      <change afterPath="$PROJECT_DIR$/src/evaluation/eval_features_extractor.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/evaluation/identification_accuracy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/0" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/modal_app_pipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/modal_app_pipeline.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/decoding/diffusion_decoding.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/decoding/diffusion_decoding.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

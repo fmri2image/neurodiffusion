@@ -301,7 +301,7 @@ def run_evaluate_identification_acc(
     subject: str = "subj02",
     method: str = "kernelridgeregression_init_latent_info -> (roi_early_pca_nopca_kernel_rbf)__c_info -> ("
                       "roi_ventral_pca_pca1024_kernel_poly_captions_c_top1_captions)",
-    features: str = "alexnet12 alexnet18 clip clip_h6 clip_h12",            # e.g. "all" or "inception clip clip_h12"
+    features: str = "clip clip_h6 clip_h12",            # e.g. "all" or "inception clip clip_h12"
     output_dir: str = "/mnt/outputs",
     n_images: int = 982,
     n_rep: int = None,         # leave None to auto-detect
